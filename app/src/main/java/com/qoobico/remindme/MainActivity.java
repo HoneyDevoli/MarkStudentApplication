@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
         adapter = new TabsFragmentAdapter(getApplicationContext(), getSupportFragmentManager(), new ArrayList<RemindDTO>());
         viewPager.setAdapter(adapter);
 
-        new RemindMeTask().execute();
+        //new RemindMeTask().execute();
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabLayout);
         tabLayout.setupWithViewPager(viewPager);
@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.view_navigation_open, R.string.view_navigation_close);
-        drawerLayout.setDrawerListener(toggle);
+        //drawerLayout.setDrawerListener(toggle);
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation);
@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
         viewPager.setCurrentItem(Constants.TAB_TWO);
     }
 
-    private class RemindMeTask extends AsyncTask<Void, Void, RemindDTO> {
+   /* private class RemindMeTask extends AsyncTask<Void, Void, RemindDTO> {
 
         @Override
         protected RemindDTO doInBackground(Void... params) {
@@ -110,5 +110,5 @@ public class MainActivity extends AppCompatActivity {
 
             adapter.setData(data);
         }
-    }
+    }*/
 }

@@ -7,7 +7,6 @@ import android.support.v4.app.FragmentPagerAdapter;
 
 import com.qoobico.remindme.dto.RemindDTO;
 import com.qoobico.remindme.fragment.AbstractTabFragment;
-import com.qoobico.remindme.fragment.BirthdaysFragment;
 import com.qoobico.remindme.fragment.HistoryFragment;
 import com.qoobico.remindme.fragment.IdeasFragment;
 import com.qoobico.remindme.fragment.TodoFragment;
@@ -53,7 +52,6 @@ public class TabsFragmentAdapter extends FragmentPagerAdapter {
         tabs.put(0, historyFragment);
         tabs.put(1, IdeasFragment.getInstance(context));
         tabs.put(2, TodoFragment.getInstance(context));
-        tabs.put(3, BirthdaysFragment.getInstance(context));
     }
 
     public void setData(List<RemindDTO> data) {
