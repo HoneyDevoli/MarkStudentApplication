@@ -1,7 +1,5 @@
 package com.qoobico.remindme;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -17,18 +15,12 @@ import com.qoobico.remindme.adapter.TabsFragmentAdapter;
 import com.qoobico.remindme.dto.LessonDTO;
 import com.qoobico.remindme.helper.ParseSchedule;
 
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
-
 import java.io.IOException;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
-public class MainActivity extends AppCompatActivity {
+public class MarkActivity extends AppCompatActivity {
 
-    private static final int LAYOUT = R.layout.activity_main;
+    private static final int LAYOUT = R.layout.activity_mark;
 
     private Toolbar toolbar;
     private DrawerLayout drawerLayout;
@@ -44,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
 
         initToolbar();
         initNavigationView();
-        initTabs();
     }
 
     private void initToolbar() {
@@ -58,20 +49,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         toolbar.inflateMenu(R.menu.menu);
-    }
-
-    private void initTabs() {
-        viewPager = (ViewPager) findViewById(R.id.viewPager);
-        adapter = new TabsFragmentAdapter(getApplicationContext(), getSupportFragmentManager());
-        viewPager.setAdapter(adapter);
-        viewPager.setOffscreenPageLimit(3);
-
-        new LessonTask().execute();
-
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabLayout);
-        tabLayout.setupWithViewPager(viewPager);
-
-
     }
 
     private void initNavigationView() {
@@ -98,37 +75,4 @@ public class MainActivity extends AppCompatActivity {
         viewPager.setCurrentItem(Constants.TAB_ONE);
     }
 
-   /* private class RemindMeTask extends AsyncTask<Void, Void, RemindDTO> {
-
-        @Override
-        protected RemindDTO doInBackground(Void... params) {
-            RestTemplate template = new RestTemplate();
-            template.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-
-            return template.getForObject(Constants.URL.GET_REMIND, RemindDTO.class);
-        }
-
-        @Override
-        protected void onPostExecute(RemindDTO remindDTO) {
-            List<RemindDTO> data = new ArrayList<>();
-            data.add(remindDTO);
-
-            adapter.setData(data);
-        }
-    }*/
-   private class LessonTask extends  AsyncTask<Void, Void, List<LessonDTO>> {
-       @Override
-       protected List<LessonDTO> doInBackground(Void... params) {
-           try {
-               return ParseSchedule.Schedule(ParseSchedule.TypeSchedule.TEACHER,2552);
-           } catch (IOException e) {
-               return null;
-           }
-       }
-
-       @Override
-       protected void onPostExecute(List<LessonDTO> lessons) {
-           adapter.setData(lessons);
-       }
-   }
 }

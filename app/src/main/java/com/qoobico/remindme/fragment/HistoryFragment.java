@@ -1,7 +1,6 @@
 package com.qoobico.remindme.fragment;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -11,7 +10,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.qoobico.remindme.R;
-import com.qoobico.remindme.adapter.RemindListAdapter;
+import com.qoobico.remindme.adapter.LessonListAdapter;
+import com.qoobico.remindme.dto.LessonDTO;
 import com.qoobico.remindme.dto.RemindDTO;
 
 import java.util.List;
@@ -19,20 +19,22 @@ import java.util.List;
 public class HistoryFragment extends AbstractTabFragment {
     private static final int LAYOUT = R.layout.fragment_history;
 
-    private List<RemindDTO> data;
+    private List<LessonDTO> data;
 
-    private RemindListAdapter adapter;
+    private LessonListAdapter adapter;
 
-    public static HistoryFragment getInstance(Context context, List<RemindDTO> data) {
+    public static HistoryFragment getInstance(Context context, List<LessonDTO> data) {
         Bundle args = new Bundle();
         HistoryFragment fragment = new HistoryFragment();
         fragment.setArguments(args);
         fragment.setContext(context);
         fragment.setData(data);
+        fragment.setRetainInstance(true);
         fragment.setTitle(context.getString(R.string.tab_item_history));
 
         return fragment;
     }
+
 
     @Nullable
     @Override
@@ -42,13 +44,13 @@ public class HistoryFragment extends AbstractTabFragment {
         RecyclerView rv = (RecyclerView) view.findViewById(R.id.recycleView);
         rv.setLayoutManager(new LinearLayoutManager(context));
 
-        adapter = new RemindListAdapter(data);
+        adapter = new LessonListAdapter(data);
         rv.setAdapter(adapter);
 
         return view;
     }
 
-    public void refreshList(List<RemindDTO> data) {
+    public void refreshList(List<LessonDTO> data) {
         adapter.setData(data);
         adapter.notifyDataSetChanged();
     }
@@ -57,7 +59,7 @@ public class HistoryFragment extends AbstractTabFragment {
         this.context = context;
     }
 
-    public void setData(List<RemindDTO> data) {
+    public void setData(List<LessonDTO> data) {
         this.data = data;
     }
 }
