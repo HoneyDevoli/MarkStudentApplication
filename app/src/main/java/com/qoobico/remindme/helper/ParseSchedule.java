@@ -16,7 +16,7 @@ public class ParseSchedule {
     public enum TypeSchedule {TEACHER, STUDENT}
 
     private final static String URL_TEACHER = "http://rasp.sstu.ru/teacher/";
-    private final static String URL_STUDENT = "http://rasp.sstu.ru/teacher/";
+    private final static String URL_STUDENT = "http://rasp.sstu.ru/group/";
 
     public static List<LessonDTO> Schedule(TypeSchedule t, int idRasp) throws IOException {
 
@@ -44,7 +44,10 @@ public class ParseSchedule {
                 lessonDTO.setAuditorium(attributes.select("div.aud").text());
                 lessonDTO.setTitle(attributes.select("div.subject").text());
                 lessonDTO.setType(attributes.select("div.type").text());
+
                 lessonDTO.setTeacherOrGroup(attributes.select("div.group").text());
+                if(lessonDTO.getTeacherOrGroup().equals(""))
+                    lessonDTO.setTeacherOrGroup(attributes.select("div.teacher a").text());
             } else if (date.size() != 0) {
                 numLesson = 0;
                 lessonDTO.setDate(date.text());

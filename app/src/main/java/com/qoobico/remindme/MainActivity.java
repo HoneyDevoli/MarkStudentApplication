@@ -1,7 +1,6 @@
 package com.qoobico.remindme;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -12,19 +11,18 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 
 import com.qoobico.remindme.adapter.TabsFragmentAdapter;
 import com.qoobico.remindme.dto.LessonDTO;
+import com.qoobico.remindme.dto.StudentDTO;
+import com.qoobico.remindme.dto.TeacherDTO;
+import com.qoobico.remindme.helper.Constants;
 import com.qoobico.remindme.helper.ParseSchedule;
 
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
-
 import java.io.IOException;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -33,14 +31,23 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private DrawerLayout drawerLayout;
     private ViewPager viewPager;
-
+    private TeacherDTO teacher;
+    private StudentDTO student;
     private TabsFragmentAdapter adapter;
+    private String role;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.AppDefault);
         super.onCreate(savedInstanceState);
         setContentView(LAYOUT);
+
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            role = extras.getString(Constants.ROLE);
+            if(role.equals(Constants.TEACHER)) teacher = (TeacherDTO) extras.getSerializable(TeacherDTO.class.getSimpleName());
+            else student = (StudentDTO) extras.getSerializable(StudentDTO.class.getSimpleName());
+        }
 
         initToolbar();
         initNavigationView();
@@ -80,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.view_navigation_open, R.string.view_navigation_close);
         //drawerLayout.setDrawerListener(toggle);
         toggle.syncState();
+
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation);
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -88,14 +96,37 @@ public class MainActivity extends AppCompatActivity {
                 switch (menuItem.getItemId()) {
                     case R.id.actionNotificationItem:
                         showNotificationTab();
+                        break;
+                    case R.id.actionNotificationItemExit:
+                        goToLoginForm();
+                        break;
                 }
                 return true;
             }
         });
+
+        View headerView = navigationView.getHeaderView(0);
+        TextView name = headerView.findViewById(R.id.man_name);
+        TextView login = headerView.findViewById(R.id.man_login);
+
+        if(role.equals(Constants.TEACHER)) {
+            name.setText(String.format("%s %s %s", teacher.getFirstName(), teacher.getMiddleName(), teacher.getLastName()));
+            login.setText(teacher.getLogin());
+        } else if(role.equals((Constants.STUDENT))) {
+            name.setText(String.format("%s %s %s", student.getFirstName(), student.getMiddleName(), student.getLastName()));
+            login.setText(student.getLogin());
+        }
+
     }
 
     private void showNotificationTab() {
         viewPager.setCurrentItem(Constants.TAB_ONE);
+    }
+
+    private void goToLoginForm() {
+        finish();
+        Intent intent = new Intent(this,LoginActivity.class);
+        startActivity(intent);
     }
 
    /* private class RemindMeTask extends AsyncTask<Void, Void, RemindDTO> {
@@ -120,7 +151,10 @@ public class MainActivity extends AppCompatActivity {
        @Override
        protected List<LessonDTO> doInBackground(Void... params) {
            try {
-               return ParseSchedule.Schedule(ParseSchedule.TypeSchedule.TEACHER,2552);
+               if(role.equals(Constants.TEACHER))
+                   return ParseSchedule.Schedule(ParseSchedule.TypeSchedule.TEACHER,teacher.getIdRasp());
+               else
+                    return ParseSchedule.Schedule(ParseSchedule.TypeSchedule.STUDENT,student.getGroup().getIdRasp());
            } catch (IOException e) {
                return null;
            }

@@ -1,10 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
 
-    <item
-        android:id="@+id/actionNotificationItem"
-        android:orderInCategory="1"
-        android:title="@string/menu_item_notification"
-        android:icon="@mipmap/ic_message_text" />
+    <item android:title="Menu">
+        <menu>
+            <item
+                android:id="@+id/actionNotificationItem"
+                android:orderInCategory="1"
+                android:title="@string/menu_item_notification"
+                android:icon="@mipmap/ic_message_text" />
+
+            <item
+                android:id="@+id/actionNotificationItem2"
+                android:orderInCategory="1"
+                android:title="@string/menu_item_notification2"
+                android:icon="@mipmap/ic_message_text" />
+
+            <item
+                android:id="@+id/actionNotificationItem3"
+                android:orderInCategory="1"
+                android:title="@string/menu_item_notification3"
+                android:icon="@mipmap/ic_message_text" />
+        </menu>
+    </item>
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/actionNotificationItemExit"
+            android:icon="@mipmap/ic_message_text"
+            android:title="@string/menu_item_exit" />
+
+    </group>
+
 
 </menu>

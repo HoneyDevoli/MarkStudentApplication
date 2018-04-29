@@ -98,6 +98,8 @@ public class LessonListAdapter extends RecyclerView.Adapter<LessonListAdapter.Le
         @Override
         public void onClick(View v) {
             //Toast.makeText(v.getContext(),number.getText().toString(),Toast.LENGTH_SHORT);
+            Intent intent = new Intent(v.getContext(),MarkActivity.class);
+
            v.getContext().startActivity(new Intent(v.getContext(), MarkActivity.class));
         }
     }

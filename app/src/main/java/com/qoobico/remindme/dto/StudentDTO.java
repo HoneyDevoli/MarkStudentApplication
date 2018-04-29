@@ -2,7 +2,7 @@ package com.qoobico.remindme.dto;
 
 import java.io.Serializable;
 
-public class TeacherDTO implements Serializable {
+public class StudentDTO implements Serializable {
 
     private long id;
     private String firstName;
@@ -10,16 +10,7 @@ public class TeacherDTO implements Serializable {
     private String lastName;
     private String login;
     private String password;
-    private int idRasp;
-
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
+    private GroupDTO group;
 
     public String getFirstName() {
         return firstName;
@@ -61,11 +52,19 @@ public class TeacherDTO implements Serializable {
         this.password = password;
     }
 
-    public int getIdRasp() {
-        return idRasp;
+    public GroupDTO getGroup() {
+        return group;
     }
 
-    public void setIdRasp(int idRasp) {
-        this.idRasp = idRasp;
+    public void setGroup(GroupDTO group) {
+        this.group = group;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 }

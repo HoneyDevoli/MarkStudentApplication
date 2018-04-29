@@ -4,35 +4,29 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.app.LoaderManager.LoaderCallbacks;
 
-import android.content.CursorLoader;
-import android.content.Loader;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.AsyncTask;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
-import com.qoobico.remindme.dto.RemindDTO;
+import com.qoobico.remindme.dto.ArrayGroupDTO;
+import com.qoobico.remindme.dto.GroupFromSstuDTO;
+import com.qoobico.remindme.dto.StudentDTO;
 import com.qoobico.remindme.dto.TeacherDTO;
+import com.qoobico.remindme.helper.Constants;
 
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
@@ -41,8 +35,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static android.Manifest.permission.READ_CONTACTS;
 
 /**
  * A login screen that offers login via email/password.
@@ -62,7 +54,7 @@ public class LoginActivity extends AppCompatActivity {
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
-    private ToggleButton mToggleButton;
+    private String ROLE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,13 +83,18 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        Button mRegisterInButton = (Button) findViewById(R.id.register_in_button);
+        mRegisterInButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(),RegisterActivity.class);
+                startActivity(intent);
+            }
+        });
+
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
-        mToggleButton = (ToggleButton)findViewById(R.id.toggleButton);
     }
-
-
-
 
     /**
      * Attempts to sign in or register the account specified by the login form.
@@ -121,7 +118,7 @@ public class LoginActivity extends AppCompatActivity {
         View focusView = null;
 
         // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
+        if (password.equals("") && !isPasswordValid(password)) {
             mPasswordView.setError(getString(R.string.error_invalid_password));
             focusView = mPasswordView;
             cancel = true;
@@ -202,6 +199,8 @@ public class LoginActivity extends AppCompatActivity {
 
         private final String mEmail;
         private final String mPassword;
+        private TeacherDTO teacher;
+        private StudentDTO student;
 
         UserLoginTask(String email, String password) {
             mEmail = email;
@@ -219,15 +218,21 @@ public class LoginActivity extends AppCompatActivity {
                 return false;
             }
 
+
             Map<String, String> param = new HashMap<String, String>();
             param.put("login", mEmail);
             param.put("password",mPassword);
 
             RestTemplate template = new RestTemplate();
             template.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-            TeacherDTO teacher = template.getForObject(Constants.URL.LOGIN_TEACHER, TeacherDTO.class, param);
+
+            teacher = template.getForObject(Constants.URL.LOGIN_TEACHER, TeacherDTO.class, param);
+            student = template.getForObject(Constants.URL.LOGIN_STUDENT, StudentDTO.class, param);
+
+            if(teacher!=null) ROLE = Constants.TEACHER;
+            else if(student!=null) ROLE = Constants.STUDENT;
             // TODO: register the new account here.
-            return teacher!=null;
+            return ROLE!=null;
         }
 
 
@@ -240,6 +245,12 @@ public class LoginActivity extends AppCompatActivity {
             if (success) {
                 finish();
                 Intent intent = new Intent(getApplicationContext(),MainActivity.class);
+                if(ROLE.equals(Constants.TEACHER)) {
+                    intent.putExtra(TeacherDTO.class.getSimpleName(), teacher);
+                } else{
+                    intent.putExtra(StudentDTO.class.getSimpleName(), student);
+                }
+                intent.putExtra(Constants.ROLE,ROLE);
                 startActivity(intent);
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
