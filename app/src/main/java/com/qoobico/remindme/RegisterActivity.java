@@ -3,6 +3,7 @@ package com.qoobico.remindme;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.Intent;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -21,6 +22,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -42,6 +44,7 @@ import com.qoobico.remindme.dto.GroupFromSstuDTO;
 import com.qoobico.remindme.dto.StudentDTO;
 import com.qoobico.remindme.dto.TeacherDTO;
 import com.qoobico.remindme.helper.Constants;
+import com.qoobico.remindme.helper.NetworkManager;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -112,15 +115,14 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 LinearLayout layoutSearch = findViewById(R.id.layout_search);
-                TextInputLayout placeLayout = findViewById(R.id.ssssst);
+
                 if (isChecked) {
                     ROLE = mToggleButton.getTextOn().toString();
                     layoutSearch.setVisibility(View.VISIBLE);
-                    placeLayout.setVisibility(View.INVISIBLE);
+
                 } else {
                     ROLE = mToggleButton.getTextOff().toString();
                     layoutSearch.setVisibility(View.GONE);
-                    placeLayout.setVisibility(View.GONE);
                 }
             }
         });
@@ -142,6 +144,9 @@ public class RegisterActivity extends AppCompatActivity {
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
+                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(mEmailView.getWindowToken(), 0);
+                imm.hideSoftInputFromWindow(mPasswordView.getWindowToken(), 0);
                 attemptLogin();
 
             }
@@ -152,14 +157,18 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 finish();
-                Intent intent = new Intent(getApplicationContext(),LoginActivity.class);
-                startActivity(intent);
             }
         });
         mEmailView.addTextChangedListener(new TextWatcher(){
             @Override
             public void afterTextChanged(Editable s) {
-                new LoginCheckTask(s.toString()).execute();
+
+                if (NetworkManager.isNetworkAvailable(getApplicationContext())) {
+                    new LoginCheckTask(s.toString()).execute();
+                } else {
+                    Toast.makeText(getApplicationContext(),"Интернет недоступен.",Toast.LENGTH_SHORT).show();
+                }
+
             }
 
             @Override
@@ -178,21 +187,7 @@ public class RegisterActivity extends AppCompatActivity {
 
 
         final ArrayList<String> myDataset = getDataSet();
-
-        mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
-
-        // если мы уверены, что изменения в контенте не изменят размер layout-а RecyclerView
-        // передаем параметр true - это увеличиваем производительность
-        mRecyclerView.setHasFixedSize(false);
-
-        mLayoutManager = new LinearLayoutManager(this);
-        mRecyclerView.setLayoutManager(mLayoutManager);
-
-        mAdapter = new GroupAdapter(myDataset);
-        mRecyclerView.setAdapter(mAdapter);
-
         editsearch =  findViewById(R.id.search);
-        final GroupAutoCompleteAdapter groupAdapter = new GroupAutoCompleteAdapter(this,myDataset);
         editsearch.setAdapter(new GroupAutoCompleteAdapter(this, myDataset));
 
 
@@ -229,11 +224,15 @@ public class RegisterActivity extends AppCompatActivity {
         List<GroupFromSstuDTO> g;
 
         GetGroupTask task = new GetGroupTask();
-        task.execute();
         try {
-            g = task.get(4, TimeUnit.SECONDS).getGroups();
-            for (int i = 0; i < g.size(); i++) {
-                mDataSet.add(i, g.get(i).getOwnPage());
+            if(NetworkManager.isNetworkAvailable(getApplicationContext())) {
+                task.execute();
+                g = task.get(4, TimeUnit.SECONDS).getGroups();
+                for (int i = 0; i < g.size(); i++) {
+                    mDataSet.add(i, g.get(i).getOwnPage());
+                }
+            } else {
+                throw new Exception();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -316,9 +315,15 @@ public class RegisterActivity extends AppCompatActivity {
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
-            showProgress(true);
-            mAuthTask = new UserLoginTask(email, password, firstName, secondName, lastName, group);
-            mAuthTask.execute((Void) null);
+            if (NetworkManager.isNetworkAvailable(getApplicationContext())) {
+                showProgress(true);
+                mAuthTask = new UserLoginTask(email, password, firstName, secondName, lastName, group);
+                mAuthTask.execute((Void) null);
+            } else {
+                Toast.makeText(getApplicationContext(),"Интернет недоступен.",Toast.LENGTH_SHORT).show();
+                showProgress(false);
+            }
+
         }
     }
 
@@ -401,12 +406,15 @@ public class RegisterActivity extends AppCompatActivity {
 
             RestTemplate template = new RestTemplate();
             template.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-            if(ROLE.equals(Constants.TEACHER)) {
-                teacher = template.getForObject(Constants.URL.REGISTER_TEACHER, TeacherDTO.class, param);
-            } else {
-                student = template.getForObject(Constants.URL.REGISTER_STUDENT, StudentDTO.class, param);
+            try {
+                if (ROLE.equals(Constants.TEACHER)) {
+                    teacher = template.getForObject(Constants.URL.REGISTER_TEACHER, TeacherDTO.class, param);
+                } else {
+                    student = template.getForObject(Constants.URL.REGISTER_STUDENT, StudentDTO.class, param);
+                }
+            } catch (Exception e){
+                e.printStackTrace();
             }
-            // TODO: register the new account here.
             return teacher!=null || student!=null;
         }
 

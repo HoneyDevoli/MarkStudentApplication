@@ -3,6 +3,7 @@ package com.qoobico.remindme;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 
@@ -14,12 +15,15 @@ import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.qoobico.remindme.dto.ArrayGroupDTO;
@@ -27,6 +31,7 @@ import com.qoobico.remindme.dto.GroupFromSstuDTO;
 import com.qoobico.remindme.dto.StudentDTO;
 import com.qoobico.remindme.dto.TeacherDTO;
 import com.qoobico.remindme.helper.Constants;
+import com.qoobico.remindme.helper.NetworkManager;
 
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
@@ -79,7 +84,11 @@ public class LoginActivity extends AppCompatActivity {
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
+                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(mEmailView.getWindowToken(), 0);
+                imm.hideSoftInputFromWindow(mPasswordView.getWindowToken(), 0);
                 attemptLogin();
+
             }
         });
 
@@ -138,9 +147,15 @@ public class LoginActivity extends AppCompatActivity {
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
-            showProgress(true);
-            mAuthTask = new UserLoginTask(email, password);
-            mAuthTask.execute((Void) null);
+
+            if (NetworkManager.isNetworkAvailable(getApplicationContext())) {
+                mAuthTask = new UserLoginTask(email, password);
+                mAuthTask.execute((Void) null);
+                showProgress(true);
+            } else {
+                Toast.makeText(getApplicationContext(),"Интернет недоступен.",Toast.LENGTH_SHORT).show();
+                showProgress(false);
+            }
         }
     }
 
@@ -209,14 +224,6 @@ public class LoginActivity extends AppCompatActivity {
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
-
-            try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
-            }
 
 
             Map<String, String> param = new HashMap<String, String>();

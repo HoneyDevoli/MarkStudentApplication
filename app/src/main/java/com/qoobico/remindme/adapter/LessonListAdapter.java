@@ -16,24 +16,26 @@ import com.qoobico.remindme.MainActivity;
 import com.qoobico.remindme.MarkActivity;
 import com.qoobico.remindme.R;
 import com.qoobico.remindme.dto.LessonDTO;
+import com.qoobico.remindme.helper.Constants;
 
 import org.w3c.dom.Text;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class LessonListAdapter extends RecyclerView.Adapter<LessonListAdapter.LessonHolder> {
 
     private List<LessonDTO> data;
-    boolean[] selects;
+
     public LessonListAdapter(List<LessonDTO> data) {
         this.data = data;
-        selects = new boolean[data.size()];
     }
 
     @Override
     public LessonHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.lesson_item, parent, false);
-
 
         return new LessonHolder(view);
     }
@@ -43,6 +45,12 @@ public class LessonListAdapter extends RecyclerView.Adapter<LessonListAdapter.Le
     public void onBindViewHolder(LessonHolder holder, int position) {
         LessonDTO item = data.get(position);
         if (item.getDate() == null) {
+            for (int i = position; i > 0 ; i--) {
+                if(data.get(i).getDate()!=null) {
+                    holder.date.setText(data.get(i).getDate() + " " + item.getNumberOfLesson() + " пара");
+                    break;
+                }
+            }
             holder.date.setVisibility(View.GONE);
         } else {
             holder.date.setText(item.getDate());
@@ -91,8 +99,9 @@ public class LessonListAdapter extends RecyclerView.Adapter<LessonListAdapter.Le
             date = (TextView) itemView.findViewById(R.id.date);
             lessonLayout = (LinearLayout) itemView.findViewById(R.id.lesson_layout);
 
-            lessonLayout.setOnClickListener(this);
-
+            if(MainActivity.getRole().equals(Constants.TEACHER)) {
+                lessonLayout.setOnClickListener(this);
+            }
         }
 
         @Override
@@ -100,12 +109,26 @@ public class LessonListAdapter extends RecyclerView.Adapter<LessonListAdapter.Le
             //Toast.makeText(v.getContext(),number.getText().toString(),Toast.LENGTH_SHORT);
             Intent intent = new Intent(v.getContext(),MarkActivity.class);
 
-           v.getContext().startActivity(new Intent(v.getContext(), MarkActivity.class));
+            LessonDTO lesson = new LessonDTO();
+            lesson.setAuditorium(this.aud.getText().toString());
+            Date currentDate = new Date();
+            currentDate.getTime();
+            SimpleDateFormat  formatter= new SimpleDateFormat("dd.MM", Locale.getDefault());
+            lesson.setDate(this.date.getText().toString());
+
+            lesson.setTitle(this.title.getText().toString());
+            lesson.setType(this.type.getText().toString());
+            lesson.setNumberOfLesson(Integer.parseInt(this.number.getText().toString()));
+
+            intent.putExtra(LessonDTO.class.getSimpleName(),lesson);
+            v.getContext().startActivity(intent);
         }
     }
 
     private String selectTime(int numberLesson) {
         switch (numberLesson) {
+            case 0:
+                return "";
             case 1:
                 return "8:00 - 9:30";
             case 2:

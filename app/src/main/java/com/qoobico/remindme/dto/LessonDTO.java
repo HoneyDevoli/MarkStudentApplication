@@ -1,7 +1,10 @@
 package com.qoobico.remindme.dto;
 
-public class LessonDTO {
+import java.io.Serializable;
 
+public class LessonDTO implements Serializable {
+
+    private Long id;
     private String date;
     private String auditorium;
     private int numberOfLesson;
@@ -56,5 +59,13 @@ public class LessonDTO {
 
     public void setTeacherOrGroup(String teacherOrGroup) {
         this.teacherOrGroup = teacherOrGroup;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

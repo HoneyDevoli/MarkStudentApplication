@@ -12,20 +12,19 @@ import android.view.ViewGroup;
 import com.qoobico.remindme.R;
 import com.qoobico.remindme.adapter.LessonListAdapter;
 import com.qoobico.remindme.dto.LessonDTO;
-import com.qoobico.remindme.dto.RemindDTO;
 
 import java.util.List;
 
-public class HistoryFragment extends AbstractTabFragment {
+public class ScheduleFragment extends AbstractTabFragment {
     private static final int LAYOUT = R.layout.fragment_history;
 
     private List<LessonDTO> data;
 
     private LessonListAdapter adapter;
 
-    public static HistoryFragment getInstance(Context context, List<LessonDTO> data) {
+    public static ScheduleFragment getInstance(Context context, List<LessonDTO> data) {
         Bundle args = new Bundle();
-        HistoryFragment fragment = new HistoryFragment();
+        ScheduleFragment fragment = new ScheduleFragment();
         fragment.setArguments(args);
         fragment.setContext(context);
         fragment.setData(data);
@@ -43,7 +42,6 @@ public class HistoryFragment extends AbstractTabFragment {
 
         RecyclerView rv = (RecyclerView) view.findViewById(R.id.recycleView);
         rv.setLayoutManager(new LinearLayoutManager(context));
-
         adapter = new LessonListAdapter(data);
         rv.setAdapter(adapter);
 
